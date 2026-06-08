@@ -56,7 +56,7 @@ class Controller:
         validation:   ValidationResult | None  = None
 
         for iteration in range(self.max_iter):
-            if iteration == 0 or (validation and validation.failure_type == "grounding"):
+            if iteration == 0 or validation:
                 reformer_out = self.reformer.run(
                     question=question,
                     outline=outline,
