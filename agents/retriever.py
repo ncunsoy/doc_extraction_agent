@@ -1,7 +1,6 @@
 """
 retriever.py
-
-Reformer'ın çıktısına göre chunk çeker ve taslak cevap üretir.
+Retrieves chunks based on Reformer's output and generates a draft response.
 """
 
 from __future__ import annotations
@@ -99,7 +98,7 @@ class RetrieverAgent:
             f"[Sayfa {c.metadata.get('page', '?')} / {c.metadata.get('title', '')}]\n{c.content}"
             for c in chunks
         )
-        
+
         prompt = SYNTHESIS_PROMPT.format(context=context, question=question)
         response = None
         # Görseller varsa multimodal call

@@ -1,6 +1,6 @@
 """
 validator.py
-Üretilen cevabın belgeye bağlılığını (grounding) ve alt soruların karşılanıp karşılanmadığını (coverage) denetler.
+Validates the generated answer's grounding and sub-question coverage.
 """
 from __future__ import annotations
 

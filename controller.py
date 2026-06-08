@@ -1,11 +1,11 @@
 """
 controller.py
-Tüm ajanları yöneten ana döngü.
+Main loop that manages all agents.
 
-Routing kuralları (deterministik):
-  grounding fail → Reformer'a dön (yanlış yeri çektik)
-  coverage fail  → Retriever'a dön (doğru yer ama eksik)
-  max_iter       → "bulunamadı" döndür
+Routing rules (deterministic):
+    grounding fail - return to Reformer (we picked the wrong place)
+    coverage fail  - return to Retriever (right place but incomplete)
+    max_iter       - return "not found"
 """
 
 from __future__ import annotations
@@ -28,25 +28,27 @@ class PipelineResult:
 
 
 class Controller:
-
     def __init__(
         self,
         reformer:  ReformerAgent,
         retriever: RetrieverAgent,
         validator: ValidatorAgent,
         max_iter:  int = 3,
+        memory:     list[dict] | None = None,
     ):
         self.reformer  = reformer
         self.retriever = retriever
         self.validator = validator
         self.max_iter  = max_iter
+        self.memory    = memory if memory is not None else []
 
     def run(
         self,
         question: str,
         outline: list[dict] | None = None,
     ) -> PipelineResult:
-
+        
+        memory_examples = self.memory.recall(question) if self.memory else None
         history:      list[dict] = []
         reformer_out: ReformerOutput | None = None
         last_chunks:  list[DocumentChunk] = []
@@ -55,12 +57,13 @@ class Controller:
 
         for iteration in range(self.max_iter):
 
-            # grounding fail veya ilk iterasyon → Reformer'ı çalıştır
+            # grounding fail or first iteration → run the Reformer
             if iteration == 0 or (validation and validation.failure_type == "grounding"):
                 reformer_out = self.reformer.run(
-                    question = question,
-                    outline  = outline,
-                    history  = history if history else None,
+                    question=question,
+                    outline=outline,
+                    history=history if history else None,
+                    memory_examples=memory_examples,
                 )
 
             # Retriever
@@ -76,8 +79,10 @@ class Controller:
                 answer_draft = last_answer,
             )
 
-            # Sonuç kontrolü 
+            # Check result
             if validation.verdict:
+                if self.memory:
+                    self.memory.add(question, reformer_out.clean_query, reformer_out.modality)
                 return PipelineResult(
                     answer     = last_answer,
                     chunks     = last_chunks,
@@ -85,14 +90,14 @@ class Controller:
                     solved     = True,
                 )
 
-            # Başarısız ise history'e ekleme, sonraki iterasyon için hazırlama
+            # On failure, add to history and prepare for next iteration
             history.append({
                 "clean_query": reformer_out.clean_query,
                 "failure_type": validation.failure_type,
                 "reason": validation.reason,
             })
 
-        # max_iter dolma durumu
+        # max_iter exhausted
         return PipelineResult(
             answer     = "No sufficient information could be found in the document for this question.",
             chunks     = last_chunks,

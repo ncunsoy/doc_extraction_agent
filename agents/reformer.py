@@ -1,6 +1,6 @@
 """
 reformer.py
-Ham kullanıcı sorusunu temizler, sub-query'lere böler ve modalite tahmini yapar.
+Cleans user questions, breaks them into sub-queries, and estimates modality.
 """
 from __future__ import annotations
 
@@ -56,10 +56,12 @@ class ReformerAgent:
         question: str,
         outline: list[dict] | None = None,
         history: list[dict] | None = None,
+        memory_examples: list[dict] | None = None
     ) -> ReformerOutput:
         """Soruyu reformüle eder.
         outline: belge yapısı (opsiyonel, modalite kararına yardımcı olur)
         history: önceki başarısız denemeler (few-shot için)
+        memory_examples: bellekten alınan örnekler (few-shot için)
         """
 
         prompt = self._build_prompt(question, outline, history)
@@ -92,14 +94,19 @@ class ReformerAgent:
 
         if outline:
             titles = [f"- {n['title']}" for n in outline[:10]]  
-            parts.append("Belge bölümleri:\n" + "\n".join(titles))
+            parts.append("Document Sections:\n" + "\n".join(titles))
+
+        if memory_examples:
+            parts.append("Previous Similar Questions:")
+            for ex in memory_examples:
+                parts.append(f"  - Question: '{ex['question']}' → Query: '{ex['clean_query']}'")
 
         if history:
-            parts.append("Önceki başarısız denemeler:")
+            parts.append("Previous Failed Attempts:")
             for h in history:
-                parts.append(f"  - Sorgu: '{h['clean_query']}' → Hata: {h['reason']}")
+                parts.append(f"  - Query : '{h['clean_query']}' - Error: {h['reason']}")
 
-        parts.append(f"Soru: {question}")
+        parts.append(f"Question: {question}")
         return "\n\n".join(parts)
 
     # Gemini'nin JSON çıktısını parse eder.
