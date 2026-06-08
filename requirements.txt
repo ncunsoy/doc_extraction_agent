@@ -3,11 +3,10 @@ PyMuPDF>=1.24.0
 unstructured[pdf]>=0.7.0
 langchain-text-splitters>=0.1.0
 pdfminer.six>=20221105
+markdown>=3.5
 
 # Embeddings & Retrieval
-sentence-transformers>=3.0.0
 faiss-cpu>=1.8.0
-rank-bm25>=0.2.2
 tiktoken>=0.7.0
 
 # LLM
@@ -18,7 +17,6 @@ Pillow>=10.0.0
 
 # Data & Typing
 numpy>=1.26.0
-pydantic>=2.7.0
 
 # Config
 python-dotenv>=1.0.0
