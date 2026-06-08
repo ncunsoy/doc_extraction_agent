@@ -23,7 +23,7 @@ User Question
      |
      +-- FAIL (grounding) ---------> back to Reformer
      |
-     +-- FAIL (coverage) ----------> back to Retriever
+     +-- FAIL (coverage) ----------> back to Reformer
      |
      +-- max_iter reached ---------> "not found"
 ```

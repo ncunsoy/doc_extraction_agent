@@ -8,6 +8,7 @@ Usage:
 
 from __future__ import annotations
 
+import pickle
 from pathlib import Path
 
 import typer
@@ -38,9 +39,11 @@ def main(
     doc_id = doc.stem
     store  = VectorStore()
 
+    outline_path = Path("store") / f"{doc_id}_outline.pkl"
+
     if store.load(doc_id):
         print(f"Index loaded: {doc_id}")
-        outline = []
+        outline = pickle.loads(outline_path.read_bytes()) if outline_path.exists() else []
     else:
         print(f"Document being processed: {doc}")
         preprocessor = DocumentPreprocessor()
@@ -56,6 +59,7 @@ def main(
         print(f"{len(chunks)} chunk created, saving to index.")
         store.add(chunks)
         store.save(doc_id)
+        outline_path.write_bytes(pickle.dumps(outline))
 
     controller = Controller(
         reformer  = ReformerAgent(),

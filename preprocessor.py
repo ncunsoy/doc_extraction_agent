@@ -11,8 +11,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pymupdf
-import markdown
-
 from unstructured.partition.pdf import partition_pdf
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -143,7 +141,6 @@ class DocumentPreprocessor:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 md_content = f.read()
-            markdown.markdown(md_content)
         except Exception as e:
             print(f"Error processing Markdown {file_path}: {e}")
             return [], []
