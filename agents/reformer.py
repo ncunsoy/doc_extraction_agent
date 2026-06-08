@@ -2,27 +2,28 @@
 reformer.py
 Cleans user questions, breaks them into sub-queries, and estimates modality.
 """
+
 from __future__ import annotations
 
 import json
 import os
 from dataclasses import dataclass, field
-from google import genai
+
 from dotenv import load_dotenv
+from google import genai
 
 load_dotenv()
-client = genai.Client(
-    api_key=os.environ["GEMINI_API_KEY"]
-    )
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 MODEL_NAME = "gemini-2.5-flash"
 
+
 @dataclass
 class ReformerOutput:
-    clean_query:  str
-    sub_queries:  list[str] = field(default_factory=list)
-    modality:     str = "text"   # "text" - "visual" - "both"
-    reasoning:    str = ""
+    clean_query: str
+    sub_queries: list[str] = field(default_factory=list)
+    modality:    str = "text"
+    reasoning:   str = ""
 
 
 SYSTEM_PROMPT = """
@@ -56,15 +57,10 @@ class ReformerAgent:
         question: str,
         outline: list[dict] | None = None,
         history: list[dict] | None = None,
-        memory_examples: list[dict] | None = None
+        memory_examples: list[dict] | None = None,
     ) -> ReformerOutput:
-        """Soruyu reformüle eder.
-        outline: belge yapısı (opsiyonel, modalite kararına yardımcı olur)
-        history: önceki başarısız denemeler (few-shot için)
-        memory_examples: bellekten alınan örnekler (few-shot için)
-        """
-
-        prompt = self._build_prompt(question, outline, history, memory_examples)
+        """Reformulate the question into structured sub-queries with modality estimation."""
+        prompt   = self._build_prompt(question, outline, history, memory_examples)
         response = None
         try:
             response = client.models.generate_content(
@@ -72,18 +68,12 @@ class ReformerAgent:
                 contents=prompt,
                 config={"system_instruction": SYSTEM_PROMPT},
             )
-        
         except Exception as e:
             print(f"Error during reformulation: {e}")
-            return ReformerOutput(
-                clean_query=question,
-                sub_queries=[question],
-                modality="text",
-                reasoning="Reformulation failed due to an error."
-            )
+            return ReformerOutput(clean_query=question, sub_queries=[question], modality="text")
+
         return self._parse(response.text)
 
-    # Prompt'u oluşturur. Outline ve history varsa ekler.
     def _build_prompt(
         self,
         question: str,
@@ -91,10 +81,11 @@ class ReformerAgent:
         history: list[dict] | None,
         memory_examples: list[dict] | None,
     ) -> str:
+        """Assemble the user-facing prompt, injecting outline, memory, and retry history."""
         parts = []
 
         if outline:
-            titles = [f"- {n['title']}" for n in outline[:10]]  
+            titles = [f"- {n['title']}" for n in outline[:10]]
             parts.append("Document Sections:\n" + "\n".join(titles))
 
         if memory_examples:
@@ -105,28 +96,25 @@ class ReformerAgent:
         if history:
             parts.append("Previous Failed Attempts:")
             for h in history:
-                parts.append(f"  - Query : '{h['clean_query']}' - Error: {h['reason']}")
+                parts.append(f"  - Query: '{h['clean_query']}' - Error: {h['reason']}")
 
         parts.append(f"Question: {question}")
         return "\n\n".join(parts)
 
-    # Gemini'nin JSON çıktısını parse eder.
     def _parse(self, text: str) -> ReformerOutput:
+        """Parse Gemini JSON output, falling back to raw text on failure."""
         try:
-            # ```json ... ``` formatındaki cevaplara karşı esnek davranma
             text = text.strip()
             if text.startswith("```"):
                 text = text.split("```")[1]
                 if text.startswith("json"):
                     text = text[4:]
-
             data = json.loads(text.strip())
             return ReformerOutput(
-                clean_query = data.get("clean_query", ""),
-                sub_queries = data.get("sub_queries", []),
-                modality    = data.get("modality", "text"),
-                reasoning   = data.get("reasoning", ""),
+                clean_query=data.get("clean_query", ""),
+                sub_queries=data.get("sub_queries", []),
+                modality=data.get("modality", "text"),
+                reasoning=data.get("reasoning", ""),
             )
         except Exception:
-            # Parse başarısız olursa ham soruyu temiz soru olarak kullanma
             return ReformerOutput(clean_query=text, sub_queries=[text])

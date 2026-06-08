@@ -1,31 +1,24 @@
 """
 validator.py
-Validates the generated answer's grounding and sub-question coverage.
+Checks the generated answer for grounding (no hallucinations) and coverage (all sub-questions answered).
 """
+
 from __future__ import annotations
 
 import json
 import os
 from dataclasses import dataclass
-from google import genai
-from dotenv import load_dotenv
 
-from preprocessor import DocumentChunk
+from dotenv import load_dotenv
+from google import genai
+
 from agents.reformer import ReformerOutput
+from preprocessor import DocumentChunk
+
+load_dotenv()
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 MODEL_NAME = "gemini-2.5-flash"
-load_dotenv()
-client = genai.Client(
-    api_key=os.environ["GEMINI_API_KEY"]
-    )
-
-
-@dataclass
-class ValidationResult:
-    verdict:      bool         # True=pass, False=fail
-    failure_type: str = ""     # "grounding" - "coverage" - ""
-    reason:       str = ""
-
 
 SYSTEM_PROMPT = """
 You are an answer validation agent. You will check two things:
@@ -43,6 +36,13 @@ Return your response ONLY in the following JSON format:
 """
 
 
+@dataclass
+class ValidationResult:
+    verdict:      bool
+    failure_type: str = ""
+    reason:       str = ""
+
+
 class ValidatorAgent:
     def __init__(self, model_name: str = MODEL_NAME):
         self.model_name = model_name
@@ -54,8 +54,8 @@ class ValidatorAgent:
         chunks: list[DocumentChunk],
         answer_draft: str,
     ) -> ValidationResult:
-        
-        prompt = self._build_prompt(question, reformer_out, chunks, answer_draft)
+        """Validate grounding and sub-question coverage of the draft answer."""
+        prompt   = self._build_prompt(question, reformer_out, chunks, answer_draft)
         response = None
         try:
             response = client.models.generate_content(
@@ -69,7 +69,6 @@ class ValidatorAgent:
 
         return self._parse(response.text)
 
-    # Validator'ın anlayabileceği şekilde prompt'u düzenle
     def _build_prompt(
         self,
         question: str,
@@ -77,6 +76,7 @@ class ValidatorAgent:
         chunks: list[DocumentChunk],
         answer_draft: str,
     ) -> str:
+        """Build the validation prompt from the question, sub-queries, chunks, and draft answer."""
         context = "\n\n---\n\n".join(
             f"[Page {c.metadata.get('page', '?')}]\n{c.content}"
             for c in chunks
@@ -92,18 +92,18 @@ class ValidatorAgent:
         )
 
     def _parse(self, text: str) -> ValidationResult:
+        """Parse Gemini JSON output, returning a safe failure on parse error."""
         try:
             text = text.strip()
             if text.startswith("```"):
                 text = text.split("```")[1]
                 if text.startswith("json"):
                     text = text[4:]
-
             data = json.loads(text.strip())
             return ValidationResult(
-                verdict      = bool(data.get("verdict", False)),
-                failure_type = data.get("failure_type", ""),
-                reason       = data.get("reason", ""),
+                verdict      =bool(data.get("verdict", False)),
+                failure_type =data.get("failure_type", ""),
+                reason       =data.get("reason", ""),
             )
         except Exception as e:
             print(f"Error during parsing: {e}")

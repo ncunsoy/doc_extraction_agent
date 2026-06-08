@@ -1,15 +1,16 @@
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from preprocessor import DocumentPreprocessor, DocumentChunk
+from preprocessor import DocumentPreprocessor
 
 TEST_EXAMPLES  = Path(__file__).resolve().parents[1] / "test_examples"
 RASTERIZED_PDF = TEST_EXAMPLES / "attention_is_all_you_need_page1.pdf"
 
 pre = DocumentPreprocessor()
 
-# OCR TEST
+# OCR FALLBACK
 print("[TEST 1] PDF - OCR fallback should be triggered")
 chunks_ocr, _ = pre.preprocess_pdf(RASTERIZED_PDF)
 assert len(chunks_ocr) > 0, "No chunks produced from PDF — OCR fallback failed"

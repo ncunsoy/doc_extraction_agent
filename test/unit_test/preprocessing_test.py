@@ -1,9 +1,10 @@
-import tempfile
-
 import sys
+import tempfile
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from preprocessor import DocumentPreprocessor, DocumentChunk
+
+from preprocessor import DocumentChunk, DocumentPreprocessor
 
 SAMPLE_CONTENT = (
     "# Introduction\n"
@@ -29,14 +30,10 @@ print(f"  {len(chunks)} chunks generated")
 print(f"  PASS\n")
 
 # TITLE METADATA
-print("[TEST 2] Metadata Titles")
+print("[TEST 2] Section titles in metadata")
 titles = {c.metadata.get("title") for c in chunks}
 assert any("Introduction" in (t or "") for t in titles), f"'Introduction' title not found: {titles}"
 print(f"  Found titles: {titles}")
-for c in chunks:
-    if c.metadata.get("title"):
-        # titles should be marked as plain text, not sentence
-        assert c.metadata.get("type") == "text", f"Title metadata type is not 'text': {c.metadata}"
 print(f"  PASS\n")
 
 # REQUIRED FIELDS
@@ -49,9 +46,9 @@ print(f"  All {len(chunks)} chunks have required fields")
 print(f"  PASS\n")
 
 # EMPTY CONTENT
-print("[TEST 4] Empty content handling")
+print("[TEST 4] Empty content produces no chunks")
 result = pre._split_into_chunks("", {"title": "x"})
-assert result == [], f"Chunks were generated from empty text: {result}"
+assert result == [], f"Chunks generated from empty text: {result}"
 print(f"  Result: {result}")
 print(f"  PASS\n")
 

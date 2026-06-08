@@ -86,7 +86,7 @@ def evaluate_one(question: str, expected: str, keywords: list[str], answer: str)
 def main():
     store = VectorStore()
     if not store.load(DOC_ID):
-        print("Index not found, processing document...")
+        print("Index not found, processing document")
         pre = DocumentPreprocessor()
         chunks, _ = pre.preprocess_pdf(PDF_PATH)
         store.add(chunks)
@@ -99,9 +99,7 @@ def main():
     )
 
     correct = 0
-    print("=" * 60)
-    print(f"EVALUATION — {len(TEST_SET)} questions")
-    print("=" * 60)
+    print(f"EVALUATION — {len(TEST_SET)} questions\n")
 
     for i, case in enumerate(TEST_SET, 1):
         result = controller.run(case["question"])
@@ -111,13 +109,12 @@ def main():
         correct += int(is_correct)
 
         status = "CORRECT" if is_correct else "WRONG"
-        print(f"\n[{i}] {case['question']}")
+        print(f"[{i}] {case['question']}")
         print(f"    Expected : {case['expected']}")
         print(f"    Answer   : {result.answer[:120]}")
-        print(f"    Result   : {status}  ({method})")
+        print(f"    Result   : {status}  ({method})\n")
 
-    print("\n" )
-    print(f"SCORE: {correct}/{len(TEST_SET)}  ({100 * correct / len(TEST_SET):.0f}%)\n")
+    print(f"SCORE: {correct}/{len(TEST_SET)}  ({100 * correct / len(TEST_SET):.0f}%)")
 
 
 if __name__ == "__main__":

@@ -1,11 +1,12 @@
 import sys
 import tempfile
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from memory import Memory
 
-# ADD AND PERSISTENCE TEST
+# ADD AND PERSISTENCE
 print("[TEST 1] add() saves to disk")
 with tempfile.TemporaryDirectory() as tmp:
     mem = Memory(path=Path(tmp) / "memory.json")
@@ -17,7 +18,7 @@ with tempfile.TemporaryDirectory() as tmp:
     print(f"  {len(mem2.records)} records persisted")
     print(f"  PASS\n")
 
-# RECALL MOST SIMILAR QUESTION TEST
+# RECALL SIMILARITY
 print("[TEST 2] recall() returns semantically similar questions")
 with tempfile.TemporaryDirectory() as tmp:
     mem = Memory(path=Path(tmp) / "memory.json")
@@ -27,21 +28,21 @@ with tempfile.TemporaryDirectory() as tmp:
 
     results = mem.recall("How many layers are in the encoder?", k=1)
     assert len(results) == 1, f"Expected 1 result, got: {len(results)}"
-    print(f"  Query   : 'How many layers are in the encoder?'")
-    print(f"  Recalled: '{results[0]['question']}'")
     assert "encoder" in results[0]["question"].lower(), \
         f"Top result should be encoder-related, got: {results[0]['question']}"
+    print(f"  Query   : 'How many layers are in the encoder?'")
+    print(f"  Recalled: '{results[0]['question']}'")
     print(f"  PASS\n")
 
-# RECALL ON EMPTY MEMORY TEST
+# EMPTY MEMORY
 print("[TEST 3] recall() on empty memory returns []")
 with tempfile.TemporaryDirectory() as tmp:
-    mem = Memory(path=Path(tmp) / "memory.json")
+    mem     = Memory(path=Path(tmp) / "memory.json")
     results = mem.recall("anything")
     assert results == [], f"Expected [], got: {results}"
     print(f"  PASS\n")
 
-# RECALL K LIMIT TEST
+# K LIMIT
 print("[TEST 4] recall() respects k limit")
 with tempfile.TemporaryDirectory() as tmp:
     mem = Memory(path=Path(tmp) / "memory.json")

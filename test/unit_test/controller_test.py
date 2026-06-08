@@ -1,14 +1,15 @@
-from unittest.mock import MagicMock
-
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from controller import Controller
-from agents.reformer import ReformerOutput
-from agents.validator import ValidationResult
-from agents.retriever import RetrieverOutput
+from unittest.mock import MagicMock
 
-REFORMER_OUT = ReformerOutput(clean_query="clean question", sub_queries=["clean question"], modality="text")
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from agents.reformer import ReformerOutput
+from agents.retriever import RetrieverOutput
+from agents.validator import ValidationResult
+from controller import Controller
+
+REFORMER_OUT  = ReformerOutput(clean_query="clean question", sub_queries=["clean question"], modality="text")
 RETRIEVER_OUT = RetrieverOutput(chunks=[], answer_draft="draft answer")
 
 
@@ -70,7 +71,7 @@ print(f"  reformer.call_count  : {reformer.run.call_count}")
 print(f"  retriever.call_count : {retriever.run.call_count}")
 print(f"  PASS\n")
 
-# MAX_ITER
+# MAX ITER
 print("[TEST 4] Max Iteration Limit")
 reformer  = MagicMock()
 retriever = MagicMock()
