@@ -1,12 +1,16 @@
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from agents.reformer import ReformerAgent
 from agents.retriever import RetrieverAgent
 from agents.validator import ValidatorAgent
 from vector_store import VectorStore
 
-PDF_PATH = "D:\\Desktop\\doc_extraction_agent\\test_examples\\attention_is_all_you_need.pdf"
+PATH = Path(__file__).resolve().parent
+PDF_PATH = PATH.parent / "test_examples" / "attention_is_all_you_need.pdf"
 DOC_ID   = "attention"
 
-# --- LOAD VECTOR STORE ---
+# LOAD VECTOR STORE 
 store = VectorStore(store_dir="store")
 loaded = store.load(DOC_ID)
 if not loaded:
@@ -14,12 +18,12 @@ if not loaded:
     exit(1)
 print(f"Index loaded: {store.index.ntotal} chunks\n")
 
-# --- AGENTS ---
+# AGENTS 
 reformer  = ReformerAgent()
 retriever = RetrieverAgent(vector_store=store, pdf_path=PDF_PATH)
 validator = ValidatorAgent()
 
-# --- TEST QUESTIONS ---
+# TEST QUESTIONS 
 questions = [
     "How many attention layers are there?",
     "How many encoder layers are in the Transformer model and what does each contain?",
@@ -51,12 +55,12 @@ for question in questions:
         print(f"  reason       : {val_out.reason}")
     print()
 
-# --- FAIL CASE TESTS ---
+# FAIL CASE TESTS 
 print("=" * 60)
 print("FAIL CASE TESTS")
 print("=" * 60)
 
-# Grounding failure: answer contains a claim not in the document
+# GROUNDING FAILURE
 print("\n[TEST 1] Grounding failure — hallucinated answer")
 ref_grounding = reformer.run("How many encoder layers does the Transformer have?")
 ret_grounding  = retriever.run(ref_grounding)
@@ -77,7 +81,7 @@ print(f"Verdict         : {'PASS' if val_grounding.verdict else 'FAIL'}")
 print(f"failure_type    : {val_grounding.failure_type}")
 print(f"reason          : {val_grounding.reason}")
 
-# Coverage failure: one sub-question is unanswerable from the document
+# COVERAGE FAILURE
 print("\n[TEST 2] Coverage failure — out-of-scope sub-question")
 ref_coverage = reformer.run(
     "How many encoder layers does the Transformer have and who won the 2024 Nobel Prize in Physics?"

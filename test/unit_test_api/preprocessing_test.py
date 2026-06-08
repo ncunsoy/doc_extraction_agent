@@ -1,3 +1,7 @@
+
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from preprocessor import DocumentPreprocessor
 from vector_store import VectorStore
 
@@ -7,7 +11,7 @@ print("Processing Markdown...\n")
 markdown = "D:\\Desktop\\doc_extraction_agent\\test_examples\\test_belgesi.md"
 created_chunks, outline = processor.preprocess_markdown(markdown)
 
-# --- 3. DISPLAYING RESULTS ---
+# DISPLAYING RESULTS
 for i, chunk in enumerate(created_chunks):
     print(f"CHUNK {i+1} | ID: {chunk.id[:8]}...")
     print(f"   TITLE: {chunk.metadata.get('title')}")
@@ -16,7 +20,7 @@ for i, chunk in enumerate(created_chunks):
     print("-" * 50)
 
 
-# --- 2. TESTING OUR CODE ---
+# TESTING CODE
 pdf_file = "D:\\Desktop\\doc_extraction_agent\\test_examples\\attention_is_all_you_need.pdf"
 pdf_chunks, outline = processor.preprocess_pdf(pdf_file)
 
@@ -28,7 +32,7 @@ for i, chunk in enumerate(pdf_chunks[:20]):  # First 20 chunks
     print(f"   CONTENT: {chunk.content.strip()[:100]}...")
     print("-" * 50)
 
-# --- VECTOR STORE TEST ---
+# VECTOR STORE TEST
 print("\n" + "="*50)
 print("Adding to Vector Store...\n")
 
