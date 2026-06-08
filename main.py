@@ -65,22 +65,22 @@ def main(
         memory    = memory
     )
 
-    print(f"\nSoru: {question}\n")
+    print(f"\nQuestion: {question}\n")
     result = controller.run(question=question, outline=outline)
 
     status = "Solved" if result.solved else "Unsolved"
     print(f"{status} - {result.iterations} iteration(s)\n")
-    print(f"Cevap:\n{result.answer}\n")
+    print(f"Answer:\n{result.answer}\n")
 
     if result.chunks:
-        print("Kaynaklar:")
+        print("Sources:")
         seen: set[str] = set()
         for chunk in result.chunks:
             title = chunk.metadata.get("title", "")
             page  = chunk.metadata.get("page", "?")
             key   = f"{title}_{page}"
             if key not in seen:
-                print(f"  Sayfa {page} - {title}")
+                print(f"  Page {page} - {title}")
                 seen.add(key)
 
 

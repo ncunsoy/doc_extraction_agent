@@ -64,7 +64,7 @@ class ReformerAgent:
         memory_examples: bellekten alınan örnekler (few-shot için)
         """
 
-        prompt = self._build_prompt(question, outline, history)
+        prompt = self._build_prompt(question, outline, history, memory_examples)
         response = None
         try:
             response = client.models.generate_content(
@@ -89,6 +89,7 @@ class ReformerAgent:
         question: str,
         outline: list[dict] | None,
         history: list[dict] | None,
+        memory_examples: list[dict] | None,
     ) -> str:
         parts = []
 

@@ -17,6 +17,7 @@ from preprocessor import DocumentChunk
 from agents.reformer import ReformerAgent, ReformerOutput
 from agents.retriever import RetrieverAgent
 from agents.validator import ValidatorAgent, ValidationResult
+from memory import Memory
 
 
 @dataclass
@@ -34,13 +35,13 @@ class Controller:
         retriever: RetrieverAgent,
         validator: ValidatorAgent,
         max_iter:  int = 3,
-        memory:     list[dict] | None = None,
+        memory:    Memory | None = None,
     ):
         self.reformer  = reformer
         self.retriever = retriever
         self.validator = validator
         self.max_iter  = max_iter
-        self.memory    = memory if memory is not None else []
+        self.memory    = memory
 
     def run(
         self,
