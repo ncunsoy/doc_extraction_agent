@@ -17,39 +17,43 @@ SAMPLE_CONTENT = (
 pre = DocumentPreprocessor()
 
 # MARKDOWN CHUNK
-print("[TEST 1] Markdown chunk uretimi")
+print("[TEST 1] Markdown chunk generation")
 with tempfile.NamedTemporaryFile(suffix=".md", mode="w", encoding="utf-8", delete=False) as f:
     f.write(SAMPLE_CONTENT)
     tmp_path = Path(f.name)
 
 chunks, outline = pre.preprocess_markdown(tmp_path)
-assert len(chunks) > 0, "Hic chunk uretilmedi"
-assert all(isinstance(c, DocumentChunk) for c in chunks), "Bazi elemanlar DocumentChunk degil"
-print(f"  {len(chunks)} chunk uretildi")
+assert len(chunks) > 0, "No chunks were generated"
+assert all(isinstance(c, DocumentChunk) for c in chunks), "Some elements are not DocumentChunk"
+print(f"  {len(chunks)} chunks generated")
 print(f"  PASS\n")
 
 # TITLE METADATA
-print("[TEST 2] Bolum basligi metadataya tasiniyor mu")
+print("[TEST 2] Metadata Titles")
 titles = {c.metadata.get("title") for c in chunks}
-assert any("Giris" in (t or "") for t in titles), f"'Giris' basligi bulunamadi: {titles}"
-print(f"  Bulunan basliklar: {titles}")
+assert any("Introduction" in (t or "") for t in titles), f"'Introduction' title not found: {titles}"
+print(f"  Found titles: {titles}")
+for c in chunks:
+    if c.metadata.get("title"):
+        # titles should be marked as plain text, not sentence
+        assert c.metadata.get("type") == "text", f"Title metadata type is not 'text': {c.metadata}"
 print(f"  PASS\n")
 
 # REQUIRED FIELDS
-print("[TEST 3] Zorunlu metadata alanlari")
+print("[TEST 3] Required metadata fields")
 for chunk in chunks:
-    assert chunk.id, f"id eksik: {chunk}"
-    assert chunk.content.strip(), f"content bos: {chunk}"
-    assert "type" in chunk.metadata, f"'type' eksik metadata'da: {chunk.metadata}"
-print(f"  Tum {len(chunks)} chunk zorunlu alanlara sahip")
+    assert chunk.id, f"id missing: {chunk}"
+    assert chunk.content.strip(), f"content empty: {chunk}"
+    assert "type" in chunk.metadata, f"'type' missing in metadata: {chunk.metadata}"
+print(f"  All {len(chunks)} chunks have required fields")
 print(f"  PASS\n")
 
 # EMPTY CONTENT
-print("[TEST 4] Bos metin chunk uretmemeli")
+print("[TEST 4] Empty content handling")
 result = pre._split_into_chunks("", {"title": "x"})
-assert result == [], f"Bos metin icin chunk uretildi: {result}"
-print(f"  Sonuc: {result}")
+assert result == [], f"Chunks were generated from empty text: {result}"
+print(f"  Result: {result}")
 print(f"  PASS\n")
 
 tmp_path.unlink(missing_ok=True)
-print("Tum testler gecti.")
+print("All tests passed.")

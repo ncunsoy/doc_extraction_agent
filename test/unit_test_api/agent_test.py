@@ -34,12 +34,12 @@ for question in questions:
     print(f"QUESTION: {question}")
 
     ref_out = reformer.run(question)
-    print(f"\nReformer → clean_query : {ref_out.clean_query}")
+    print(f"\nReformer - clean_query : {ref_out.clean_query}")
     print(f"           sub_queries : {ref_out.sub_queries}")
     print(f"           modality    : {ref_out.modality}")
 
     ret_out = retriever.run(ref_out)
-    print(f"\nRetriever → {len(ret_out.chunks)} chunks retrieved")
+    print(f"\nRetriever - {len(ret_out.chunks)} chunks retrieved")
     print(f"\nANSWER:\n{ret_out.answer_draft}")
 
     val_out = validator.run(
@@ -49,7 +49,7 @@ for question in questions:
         answer_draft=ret_out.answer_draft,
     )
     verdict_str = "PASS" if val_out.verdict else "FAIL"
-    print(f"\nValidator → {verdict_str}")
+    print(f"\nValidator - {verdict_str}")
     if not val_out.verdict:
         print(f"  failure_type : {val_out.failure_type}")
         print(f"  reason       : {val_out.reason}")

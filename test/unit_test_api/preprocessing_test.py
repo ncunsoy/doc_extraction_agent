@@ -5,11 +5,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from preprocessor import DocumentPreprocessor
 from vector_store import VectorStore
 
+PATH = Path(__file__).resolve().parent.parent
+MARKDOWN_PATH = PATH / "test_examples" / "test_belgesi.md"
+PDF_PATH      = PATH / "test_examples" / "attention_is_all_you_need.pdf"
+
 processor = DocumentPreprocessor(max_tokens=50)
 
 print("Processing Markdown...\n")
-markdown = "D:\\Desktop\\doc_extraction_agent\\test_examples\\test_belgesi.md"
-created_chunks, outline = processor.preprocess_markdown(markdown)
+created_chunks, outline = processor.preprocess_markdown(MARKDOWN_PATH)
 
 # DISPLAYING RESULTS
 for i, chunk in enumerate(created_chunks):
@@ -21,8 +24,7 @@ for i, chunk in enumerate(created_chunks):
 
 
 # TESTING CODE
-pdf_file = "D:\\Desktop\\doc_extraction_agent\\test_examples\\attention_is_all_you_need.pdf"
-pdf_chunks, outline = processor.preprocess_pdf(pdf_file)
+pdf_chunks, outline = processor.preprocess_pdf(PDF_PATH)
 
 print("\nProcessing PDF...\n")
 for i, chunk in enumerate(pdf_chunks[:20]):  # First 20 chunks

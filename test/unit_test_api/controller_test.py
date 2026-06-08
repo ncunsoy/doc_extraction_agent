@@ -8,7 +8,7 @@ from agents.retriever import RetrieverAgent
 from agents.validator import ValidatorAgent
 from controller import Controller
 
-PDF_PATH = "D:\\Desktop\\doc_extraction_agent\\test_examples\\attention_is_all_you_need.pdf"
+PDF_PATH = Path(__file__).resolve().parent.parent / "test_examples" / "attention_is_all_you_need.pdf"
 DOC_ID   = "attention"
 
 # LOAD VECTOR STORE 

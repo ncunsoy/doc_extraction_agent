@@ -47,6 +47,8 @@ class VectorStore:
 
     # Chunk'ları embed edip index'e ekler.
     def add(self, chunks: list[DocumentChunk]) -> None:
+        if not chunks:
+            return
         texts = [c.content for c in chunks]
         vectors = _embed(texts)
 

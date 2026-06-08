@@ -13,7 +13,7 @@ RETRIEVER_OUT = RetrieverOutput(chunks=[], answer_draft="draft answer")
 
 
 # NORMAL QUESTION
-print("[TEST 1] PASS on the first attempt")
+print("[TEST 1] First Attempt PASS")
 reformer  = MagicMock()
 retriever = MagicMock()
 validator = MagicMock()
@@ -31,7 +31,7 @@ print(f"  iterations : {result.iterations}")
 print(f"  PASS\n")
 
 # GROUNDING ERROR - REFORMER RETRY
-print("[TEST 2] Does grounding error call Reformer again?")
+print("[TEST 2] Grounding Error - Reformer Retry")
 reformer  = MagicMock()
 retriever = MagicMock()
 validator = MagicMock()
@@ -50,7 +50,7 @@ print(f"  reformer.call_count : {reformer.run.call_count}")
 print(f"  PASS\n")
 
 # COVERAGE ERROR - RETRIEVER RETRY, NO REFORMER RETRY
-print("[TEST 3] Does coverage error skip Reformer?")
+print("[TEST 3] Coverage Error - Retriever Retry, No Reformer Retry")
 reformer  = MagicMock()
 retriever = MagicMock()
 validator = MagicMock()
@@ -71,7 +71,7 @@ print(f"  retriever.call_count : {retriever.run.call_count}")
 print(f"  PASS\n")
 
 # MAX_ITER
-print("[TEST 4] Does the loop stop at max_iter?")
+print("[TEST 4] Max Iteration Limit")
 reformer  = MagicMock()
 retriever = MagicMock()
 validator = MagicMock()
