@@ -94,7 +94,7 @@ def main():
 
     controller = Controller(
         reformer  = ReformerAgent(),
-        retriever = RetrieverAgent(vector_store=store, pdf_path=PDF_PATH),
+        retriever = RetrieverAgent(vector_store=store),
         validator = ValidatorAgent(),
     )
 

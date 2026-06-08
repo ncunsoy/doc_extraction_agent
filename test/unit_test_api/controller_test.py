@@ -9,8 +9,7 @@ from agents.validator import ValidatorAgent
 from controller import Controller
 from vector_store import VectorStore
 
-PDF_PATH = Path(__file__).resolve().parents[1] / "test_examples" / "attention_is_all_you_need.pdf"
-DOC_ID   = "attention"
+DOC_ID = "attention"
 
 # LOAD VECTOR STORE
 store = VectorStore(store_dir="store")
@@ -22,7 +21,7 @@ print(f"Index loaded: {store.index.ntotal} chunks\n")
 # BUILD CONTROLLER
 controller = Controller(
     reformer  = ReformerAgent(),
-    retriever = RetrieverAgent(vector_store=store, pdf_path=PDF_PATH),
+    retriever = RetrieverAgent(vector_store=store),
     validator = ValidatorAgent(),
     max_iter  = 3,
 )

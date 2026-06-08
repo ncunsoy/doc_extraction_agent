@@ -8,8 +8,7 @@ from agents.retriever import RetrieverAgent
 from agents.validator import ValidatorAgent
 from vector_store import VectorStore
 
-PDF_PATH = Path(__file__).resolve().parents[1] / "test_examples" / "attention_is_all_you_need.pdf"
-DOC_ID   = "attention"
+DOC_ID = "attention"
 
 # LOAD VECTOR STORE
 store  = VectorStore(store_dir="store")
@@ -21,7 +20,7 @@ print(f"Index loaded: {store.index.ntotal} chunks\n")
 
 # AGENTS
 reformer  = ReformerAgent()
-retriever = RetrieverAgent(vector_store=store, pdf_path=PDF_PATH)
+retriever = RetrieverAgent(vector_store=store)
 validator = ValidatorAgent()
 
 # NORMAL QUESTIONS
@@ -54,6 +53,27 @@ for question in questions:
         print(f"  failure_type : {val_out.failure_type}")
         print(f"  reason       : {val_out.reason}")
     print()
+
+# ANOTHER LANGUAGE
+print("\n[TEST] Non-English question\n")
+question_turkish = "Transformer'da kaç encoder katmanı vardır?"
+ref_turkish      = reformer.run(question_turkish)
+print(f"Original     : {question_turkish}")
+print(f"clean_query  : {ref_turkish.clean_query}")
+print(f"sub_queries  : {ref_turkish.sub_queries}")
+ret_turkish      = retriever.run(ref_turkish)
+val_turkish      = validator.run(
+    question=question_turkish,
+    reformer_out=ref_turkish,
+    chunks=ret_turkish.chunks,
+    answer_draft=ret_turkish.answer_draft,
+)
+print(f"Answer       : {ret_turkish.answer_draft[:120]}")
+print(f"Verdict      : {'PASS' if val_turkish.verdict else 'FAIL'}")
+if not val_turkish.verdict:
+    print(f"failure_type : {val_turkish.failure_type}")
+    print(f"reason       : {val_turkish.reason}")
+
 
 # FAIL CASES
 print("\nFAIL CASE TESTS\n")
@@ -93,3 +113,6 @@ print(f"Sub-queries  : {ref_coverage.sub_queries}")
 print(f"Verdict      : {'PASS' if val_coverage.verdict else 'FAIL'}")
 print(f"failure_type : {val_coverage.failure_type}")
 print(f"reason       : {val_coverage.reason}")
+
+
+

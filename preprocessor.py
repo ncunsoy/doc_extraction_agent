@@ -19,9 +19,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 @dataclass
 class DocumentChunk:
-    id:       str
-    content:  str
-    metadata: dict
+    id:          str
+    content:     str
+    metadata:    dict
+    image_bytes: bytes | None = None
 
 
 class DocumentPreprocessor:
@@ -66,12 +67,11 @@ class DocumentPreprocessor:
                     languages=self.languages or None,
                 )
 
-            doc.close()
-
-            chunks: list[DocumentChunk] = []
-            current_section_title = "Full Document"
-            current_section_level = 0
-            text_buffer: list[str] = []
+            chunks: list[DocumentChunk]  = []
+            current_section_title        = "Full Document"
+            current_section_level        = 0
+            text_buffer: list[str]       = []
+            page_image_counter: dict[int, int] = {}
 
             for element in elements:
                 page_num = element.metadata.page_number or 1
@@ -98,16 +98,26 @@ class DocumentPreprocessor:
                         text_buffer = []
 
                     html_content = element.metadata.text_as_html or str(element)
-                    chunk_id = hashlib.md5(html_content.encode()).hexdigest()
+                    chunk_id     = hashlib.md5(html_content.encode()).hexdigest()
+                    image_bytes  = None
+                    image_index  = None
+                    if element_type.lower() == "image":
+                        image_index  = page_image_counter.get(page_num, 0)
+                        image_bytes  = self._extract_image_bytes(doc, page_num, image_index)
+                        page_image_counter[page_num] = image_index + 1
+                    meta = {
+                        "title": current_section_title,
+                        "level": current_section_level,
+                        "page":  page_num,
+                        "type":  element_type.lower(),
+                    }
+                    if image_index is not None:
+                        meta["image_index"] = image_index
                     chunks.append(DocumentChunk(
                         id=chunk_id,
                         content=html_content,
-                        metadata={
-                            "title": current_section_title,
-                            "level": current_section_level,
-                            "page":  page_num,
-                            "type":  element_type.lower(),
-                        },
+                        metadata=meta,
+                        image_bytes=image_bytes,
                     ))
 
             if text_buffer:
@@ -115,6 +125,8 @@ class DocumentPreprocessor:
                     "\n\n".join(text_buffer),
                     {"title": current_section_title, "level": current_section_level, "page": page_count},
                 ))
+
+            doc.close()
 
             outline_list = [
                 {"title": title, "level": level, "page": page}
@@ -166,6 +178,17 @@ class DocumentPreprocessor:
             doc_chunks.append(DocumentChunk(id=chunk_id, content=chunk_text, metadata=chunk_meta))
 
         return doc_chunks
+
+    def _extract_image_bytes(self, doc: pymupdf.Document, page_num: int, image_index: int = 0) -> bytes | None:
+        """Return PNG bytes of the image_index-th image block on the page, or None."""
+        if page_num < 1 or page_num > doc.page_count:
+            return None
+        page         = doc[page_num - 1]
+        image_blocks = [b for b in page.get_text("dict")["blocks"] if b["type"] == 1]
+        if image_index >= len(image_blocks):
+            return None
+        pix = page.get_pixmap(clip=pymupdf.Rect(image_blocks[image_index]["bbox"]), dpi=150)
+        return pix.tobytes("png")
 
     def _map_pages_to_sections(self, outline: list) -> dict:
         """Map PyMuPDF TOC entries to {page: (title, level)}."""

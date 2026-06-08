@@ -59,7 +59,7 @@ def main(
 
     controller = Controller(
         reformer  = ReformerAgent(),
-        retriever = RetrieverAgent(vector_store=store, pdf_path=doc, top_k=top_k),
+        retriever = RetrieverAgent(vector_store=store, top_k=top_k),
         validator = ValidatorAgent(),
         max_iter  = max_iter,
         memory    = memory
