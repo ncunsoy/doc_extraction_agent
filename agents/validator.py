@@ -54,12 +54,19 @@ class ValidatorAgent:
         chunks: list[DocumentChunk],
         answer_draft: str,
     ) -> ValidationResult:
+        
         prompt = self._build_prompt(question, reformer_out, chunks, answer_draft)
-        response = client.models.generate_content(
-            model=self.model_name,
-            contents=prompt,
-            config={"system_instruction": SYSTEM_PROMPT},
-        )
+        response = None
+        try:
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config={"system_instruction": SYSTEM_PROMPT},
+            )
+        except Exception as e:
+            print(f"Error during validation: {e}")
+            return ValidationResult(verdict=False, failure_type="grounding", reason=str(e))
+
         return self._parse(response.text)
 
     # Validator'ın anlayabileceği şekilde prompt'u düzenle
@@ -98,6 +105,6 @@ class ValidatorAgent:
                 failure_type = data.get("failure_type", ""),
                 reason       = data.get("reason", ""),
             )
-        except Exception:
-            # If parsing fails, return a safe failure
-            return ValidationResult(verdict=False, failure_type="grounding", reason="Parse error")
+        except Exception as e:
+            print(f"Error during parsing: {e}")
+            return ValidationResult(verdict=False, failure_type="grounding", reason=str(e))

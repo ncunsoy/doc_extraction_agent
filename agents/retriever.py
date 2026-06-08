@@ -99,15 +99,21 @@ class RetrieverAgent:
             f"[Sayfa {c.metadata.get('page', '?')} / {c.metadata.get('title', '')}]\n{c.content}"
             for c in chunks
         )
+        
         prompt = SYNTHESIS_PROMPT.format(context=context, question=question)
-
+        response = None
         # Görseller varsa multimodal call
         if images:
             content = [prompt] + images
         else:
             content = prompt
 
-        response = client.models.generate_content(model=self.model_name, contents=content)
+        try:
+            response = client.models.generate_content(model=self.model_name, contents=content)
+        except Exception as e:
+            print(f"Error during synthesis: {e}")
+            return f"Response generation failed due to an error: {e}"
+        
         return response.text
 
     # Visual chunk'ların metadata'sındaki sayfa numaralarına göre görsel blokları döndürür.

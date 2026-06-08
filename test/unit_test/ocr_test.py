@@ -5,8 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from preprocessor import DocumentPreprocessor, DocumentChunk
 
 TEST_EXAMPLES  = Path(__file__).resolve().parents[1] / "test_examples"
-NORMAL_PDF     = TEST_EXAMPLES / "attention_is_all_you_need.pdf"
-RASTERIZED_PDF = TEST_EXAMPLES / "attention_is_all_you_need_png.pdf"
+RASTERIZED_PDF = TEST_EXAMPLES / "attention_is_all_you_need_page1.pdf"
 
 pre = DocumentPreprocessor()
 

@@ -61,12 +61,24 @@ class ReformerAgent:
         outline: belge yapısı (opsiyonel, modalite kararına yardımcı olur)
         history: önceki başarısız denemeler (few-shot için)
         """
+
         prompt = self._build_prompt(question, outline, history)
-        response = client.models.generate_content(
-            model=self.model_name,
-            contents=prompt,
-            config={"system_instruction": SYSTEM_PROMPT},
-        )
+        response = None
+        try:
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config={"system_instruction": SYSTEM_PROMPT},
+            )
+        
+        except Exception as e:
+            print(f"Error during reformulation: {e}")
+            return ReformerOutput(
+                clean_query=question,
+                sub_queries=[question],
+                modality="text",
+                reasoning="Reformulation failed due to an error."
+            )
         return self._parse(response.text)
 
     # Prompt'u oluşturur. Outline ve history varsa ekler.

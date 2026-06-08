@@ -28,7 +28,7 @@ class DocumentChunk:
     metadata: dict
 
 class DocumentPreprocessor:
-    def __init__(self, max_tokens=1000, ocr_char_threshold=30):
+    def __init__(self, max_tokens=1000, ocr_char_threshold=30, languages: list[str] | None = None):
         self.max_tokens = max_tokens
         self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             encoding_name="cl100k_base",
@@ -37,6 +37,7 @@ class DocumentPreprocessor:
             separators=["\n\n", "\n", " ", ""],
         )
         self.ocr_char_threshold = ocr_char_threshold
+        self.languages = languages or []
 
 
     # PDF'leri bölümlere göre böler, tablo ve metin ayrımı yaparak ve recursive chunk'lara dönüştürür
@@ -63,7 +64,8 @@ class DocumentPreprocessor:
                 elements = partition_pdf(
                     filename=str(file_path),
                     strategy="ocr_only",
-                    infer_table_structure=True
+                    infer_table_structure=True,
+                    languages=self.languages or None,
                 )
 
             doc.close()
