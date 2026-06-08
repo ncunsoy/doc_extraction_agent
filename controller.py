@@ -4,7 +4,7 @@ Orchestrates the agent pipeline with a deterministic ReAct loop.
 
 Routing rules:
   grounding fail : re-run Reformer (wrong retrieval target)
-  coverage fail  : re-run Retriever only (right target, incomplete results)
+  coverage fail  : re-run Reformer (query may also be wrong; Retriever is deterministic)
   max_iter       : return "not found"
 """
 
