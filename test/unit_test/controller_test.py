@@ -50,8 +50,8 @@ assert reformer.run.call_count == 2, f"Reformer must be called 2 times, got: {re
 print(f"  reformer.call_count : {reformer.run.call_count}")
 print(f"  PASS\n")
 
-# COVERAGE ERROR - RETRIEVER RETRY, NO REFORMER RETRY
-print("[TEST 3] Coverage Error - Retriever Retry, No Reformer Retry")
+# COVERAGE ERROR - BOTH REFORMER AND RETRIEVER RETRY
+print("[TEST 3] Coverage Error - Reformer and Retriever Both Retry")
 reformer  = MagicMock()
 retriever = MagicMock()
 validator = MagicMock()
@@ -65,7 +65,7 @@ validator.run.side_effect  = [
 ctrl   = Controller(reformer, retriever, validator, max_iter=3)
 result = ctrl.run("question")
 assert result.solved is True
-assert reformer.run.call_count == 1, f"Reformer must be called only once, got: {reformer.run.call_count}"
+assert reformer.run.call_count == 2, f"Reformer must be called 2 times, got: {reformer.run.call_count}"
 assert retriever.run.call_count == 2, f"Retriever must be called 2 times, got: {retriever.run.call_count}"
 print(f"  reformer.call_count  : {reformer.run.call_count}")
 print(f"  retriever.call_count : {retriever.run.call_count}")
