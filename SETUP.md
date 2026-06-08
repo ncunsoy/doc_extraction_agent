@@ -27,6 +27,23 @@ brew install poppler
 apt install poppler-utils
 ```
 
+### Tesseract (required for OCR fallback)
+
+**Windows**
+1. Download the installer from https://github.com/UB-Mannheim/tesseract/wiki
+2. Run the installer — check "Add to PATH" during setup
+3. Or add manually: Start → "environment variables" → System variables → `Path` → New → paste the install path (e.g. `D:\Tesseract_OCR`)
+
+**macOS**
+```
+brew install tesseract
+```
+
+**Linux**
+```
+apt install tesseract-ocr
+```
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in your API key:
