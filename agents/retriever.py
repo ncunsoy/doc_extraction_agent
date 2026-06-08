@@ -32,14 +32,14 @@ class RetrieverOutput:
 MODEL_NAME = "gemini-2.5-flash"
 
 SYNTHESIS_PROMPT = """
-Aşağıdaki belge parçalarını kullanarak soruyu yanıtla.
-Yalnızca verilen içeriği kullan. Belgede olmayan bilgileri üretme.
-Cevabını Türkçe ver.
+Use the following document excerpts to answer the question.
+Only use the provided content. Do not invent information that is not in the documents.
+Provide your answer in English.
 
-Belge parçaları:
+Document excerpts:
 {context}
 
-Soru: {question}
+Question: {question}
 """
 
 
