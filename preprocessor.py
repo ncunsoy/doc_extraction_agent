@@ -28,8 +28,7 @@ class DocumentChunk:
     metadata: dict
 
 class DocumentPreprocessor:
-    
-    def __init__(self, max_tokens: int = 1000):
+    def __init__(self, max_tokens=1000, ocr_char_threshold=30):
         self.max_tokens = max_tokens
         self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             encoding_name="cl100k_base",
@@ -37,6 +36,8 @@ class DocumentPreprocessor:
             chunk_overlap=int(self.max_tokens * 0.12),
             separators=["\n\n", "\n", " ", ""],
         )
+        self.ocr_char_threshold = ocr_char_threshold
+
 
     # PDF'leri bölümlere göre böler, tablo ve metin ayrımı yaparak ve recursive chunk'lara dönüştürür
     def preprocess_pdf(self, file_path: Path) -> tuple[list[DocumentChunk], list[dict]]:
@@ -45,19 +46,27 @@ class DocumentPreprocessor:
             doc = pymupdf.open(file_path)
             outline = doc.get_toc()
             page_count = doc.page_count
-
             page_to_section = self._map_pages_to_sections(outline)
             if not page_to_section:
                 page_to_section = self._extract_sections_from_fonts(doc)
             
-            doc.close()
-
             #  Bölümlere göre PDF bölme - tablo ve metin ayrımı 
             elements = partition_pdf(
                 filename=str(file_path),
                 strategy="fast", 
                 infer_table_structure=True 
             )
+
+            #  OCR fallback
+            total_text = sum(len(str(e).strip()) for e in elements)
+            if not elements or total_text < doc.page_count * 30:
+                elements = partition_pdf(
+                    filename=str(file_path),
+                    strategy="ocr_only",
+                    infer_table_structure=True
+                )
+
+            doc.close()
 
             chunks = []
             current_section_title = "Full Document"
