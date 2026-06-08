@@ -27,7 +27,7 @@ advice, but that flexibility was given up for determinism and testability.
 
 `gemini-embedding-2` supports multimodal embedding — text and images share one
 vector space, which would let figures and tables be retrieved by visual semantics
-rather than just their caption text. The model was integrated and tested, "but was reverted for a practical reason: it has no batch API.
+rather than just their caption text. The model was integrated and tested, but was reverted for a practical reason: it has no batch API.
 
 Each input requires a separate request, so indexing a 300-chunk document needs
 300+ calls. At free-tier quota (150 requests/minute) this takes minutes per
