@@ -22,14 +22,12 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 MODEL_NAME = "gemini-2.5-flash"
 
-# Note: answers are currently forced to English so the Validator evaluates consistently.
-# To support multilingual answers, replace "Provide your answer in English." with
-# "Answer in the same language as the question." — the Reformer already rewrites
-# sub-queries to the document's language for retrieval, so retrieval quality is unaffected.
+# Answers are returned in the question's language. The Reformer rewrites sub-queries to
+# the document's language for retrieval, so retrieval quality is unaffected.
 SYNTHESIS_PROMPT = """
 Use the following document excerpts to answer the question.
 Only use the provided content. Do not invent information that is not in the documents.
-Provide your answer in English.
+Answer in the same language as the question.
 
 Document excerpts:
 {context}
